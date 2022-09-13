@@ -1,7 +1,5 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.ArrayList;
 
 public class WriteFile {
     public static void WriteFilePath(String caminho, String texto) {
@@ -15,6 +13,23 @@ public class WriteFile {
         catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    public static ArrayList<Integer> ReadFile(String name) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(name));
+        String linha;
+        ArrayList<Integer> lista = new ArrayList<Integer>();
+
+        while (br.readLine() != null){
+            linha = br.readLine();
+            String[] numeros = linha.split("/ /g");
+            for(int i = 0; i < numeros.length; i++){
+              lista.add(Integer.valueOf(numeros[i]));
+            }
+            break;
+        }
+
+        return lista;
     }
 
 }
