@@ -5,6 +5,23 @@ public class Trabalhadora extends Thread{
     private int[] vector;
     private int[] sorted_vector;
 
+    public Trabalhadora(){
+
+    }
+
+    public void run(){
+        try{
+            makeVector(1000);
+            makeArquivoDesordenado();
+
+            quicksort(0, this.sorted_vector.length - 1);
+            makeArquivoOrdenado();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public void makeVector(int quant){
         int[] v = new int[quant];
         for (int i = 0; i<quant; i++){
@@ -53,9 +70,6 @@ public class Trabalhadora extends Thread{
         this.sorted_vector[j] = temp;
     }
 
-    public Trabalhadora(){
-    }
-
     public String getVector() {
         String str = "";
         for (int i=0; i<this.vector.length; i++){
@@ -79,18 +93,5 @@ public class Trabalhadora extends Thread{
     }
     public void makeArquivoOrdenado(){
         WriteFile.WriteFilePath("numerosOrdenados.txt", getSortedVector());
-    }
-
-    public void run(){
-        try{
-            makeVector(1000);
-            makeArquivoDesordenado();
-
-            quicksort(0, this.sorted_vector.length - 1);
-            makeArquivoOrdenado();
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 }
