@@ -22,8 +22,11 @@ public class WriteFile {
 
         while (br.readLine() != null){
             linha = br.readLine();
-            Integer numero = Integer.valueOf(linha);
-            lista.add(numero);
+            String[] numeros = linha.split("/ /g");
+            for(int i = 0; i < numeros.length; i++){
+              lista.add(Integer.valueOf(numeros[i]));
+            }
+            break;
         }
 
         return lista;
