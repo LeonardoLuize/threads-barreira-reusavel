@@ -1,28 +1,18 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Trabalhadora extends Thread{
     private int[] vector;
     private int[] sorted_vector;
 
-    public void run(){
-        try{
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public Trabalhadora(){
-        this.vector = makeVector(100);
-    }
-
-    public int[] makeVector(int quant){
+    public void makeVector(int quant){
         int[] v = new int[quant];
         for (int i = 0; i<quant; i++){
             Random rand = new Random();
             v[i] = rand.nextInt(106);
         }
-        return v;
+        this.vector = v;
+        this.sorted_vector = vector;
     }
 
     public void bubble_sort(){
@@ -63,6 +53,9 @@ public class Trabalhadora extends Thread{
         this.sorted_vector[j] = temp;
     }
 
+    public Trabalhadora(){
+    }
+
     public String getVector() {
         String str = "";
         for (int i=0; i<this.vector.length; i++){
@@ -86,5 +79,18 @@ public class Trabalhadora extends Thread{
     }
     public void makeArquivoOrdenado(){
         WriteFile.WriteFilePath("numerosOrdenados.txt", getSortedVector());
+    }
+
+    public void run(){
+        try{
+            makeVector(1000);
+            makeArquivoDesordenado();
+
+            quicksort(0, this.sorted_vector.length - 1);
+            makeArquivoOrdenado();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
