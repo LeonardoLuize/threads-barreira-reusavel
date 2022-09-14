@@ -1,24 +1,46 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 public class Trabalhadora extends Thread{
     private int[] vector;
     private int[] sorted_vector;
+    private int[] index;
+    private GestorSemaforo gestorSemaforo;
+    private ArrayList<String> fila_arquivos;
 
-    public Trabalhadora(){
-
+    public Trabalhadora(ArrayList<String> fila_arquivos, int[] index, GestorSemaforo gestorSemaforo){
+        this.index = index;
+        this.gestorSemaforo = gestorSemaforo;
+        this.fila_arquivos = fila_arquivos;
     }
 
     public void run(){
-        try{
+        try {
             makeVector(1000);
-            makeArquivoDesordenado();
+            Semaphore trabalhadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(0);
+            Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
 
+            trabalhadoraSemaphore.acquire();
+            String sortedPath = getCaminho("-Ordenada");
+            String path = getCaminho("-Desordenada");
+            this.index[0]++;
+            trabalhadoraSemaphore.release();
+
+            WriteFile.WriteFilePath(path, getVector());
             quicksort(0, this.sorted_vector.length - 1);
-            makeArquivoOrdenado();
+            WriteFile.WriteFilePath(sortedPath, getSortedVector());
 
-        }catch (Exception e){
-            e.printStackTrace();
+            vetorSemaphore.acquire();
+            fila_arquivos.add(sortedPath);
+            vetorSemaphore.release();
+
+            gestorSemaforo.executaBarreiraEntrada();
+
+
+            gestorSemaforo.executaBarreiraSaida();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -26,7 +48,7 @@ public class Trabalhadora extends Thread{
         int[] v = new int[quant];
         for (int i = 0; i<quant; i++){
             Random rand = new Random();
-            v[i] = rand.nextInt(106);
+            v[i] = rand.nextInt(10000000);
         }
         this.vector = v;
         this.sorted_vector = vector;
@@ -88,10 +110,14 @@ public class Trabalhadora extends Thread{
         this.vector = vector;
     }
 
-    public void makeArquivoDesordenado(){
-        WriteFile.WriteFilePath("numerosDesordenados.txt", getVector());
+    private String getCaminho(String sufix){
+        String arqName = "Lista";
+        arqName += sufix;
+        arqName += getIndex();
+        arqName += ".txt";
+        return arqName;
     }
-    public void makeArquivoOrdenado(){
-        WriteFile.WriteFilePath("numerosOrdenados.txt", getSortedVector());
+    private int getIndex(){
+        return this.index[0];
     }
 }

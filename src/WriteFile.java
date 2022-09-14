@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.*;
 
 public class WriteFile {
     public static void WriteFilePath(String caminho, String texto) {
@@ -17,16 +19,10 @@ public class WriteFile {
 
     public static ArrayList<Integer> ReadFile(String name) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(name));
-        String linha;
         ArrayList<Integer> lista = new ArrayList<Integer>();
-
-        while (br.readLine() != null){
-            linha = br.readLine();
-            String[] numeros = linha.split("/ /g");
-            for(int i = 0; i < numeros.length; i++){
-              lista.add(Integer.valueOf(numeros[i]));
-            }
-            break;
+        String linha = br.readLine();
+        for (String numero : linha.split(" ")) {
+            lista.add(Integer.valueOf(numero));
         }
 
         return lista;

@@ -1,40 +1,56 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.Semaphore;
 
 public class Combinadora extends Thread{
 
     private ArrayList<String> fila_arquivos_gerados;
-    private HashSet<Integer> lista_final;
+    private HashSet<Integer> lista_final = new HashSet<>();
+    private int[] contador;
+    private GestorSemaforo gestorSemaforo;
 
-    private int contador = 0;
-
-    public Combinadora(ArrayList<String> fila_arquivos_gerados) {
+    public Combinadora(ArrayList<String> fila_arquivos_gerados, int[] contador, GestorSemaforo gestorSemaforo) {
         this.fila_arquivos_gerados = fila_arquivos_gerados;
+        this.gestorSemaforo = gestorSemaforo;
+        this.contador = contador;
     }
 
     public void run(){
-        for(int i = 0; i < fila_arquivos_gerados.size(); i++){
-            ArrayList<Integer> arquivo;
-            try {
-                arquivo = WriteFile.ReadFile(fila_arquivos_gerados.get(i));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        try {
+            Semaphore combinadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(1);
+            Semaphore combinadoraAlert = gestorSemaforo.getSemaphoreByIndex(6);
+            Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
+
+            combinadoraAlert.acquire();
+            for (String fila_arquivos_gerado : fila_arquivos_gerados) {
+                ArrayList<Integer> arquivo;
+                try {
+                    arquivo = WriteFile.ReadFile(fila_arquivos_gerado);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                lista_final.addAll(arquivo);
             }
 
-            for (int count = 0; count < arquivo.size(); count++){
-                lista_final.add(arquivo.get(count));
-            }
+            vetorSemaphore.acquire();
+            excluiArquivoLista();
+            vetorSemaphore.release();
+
+            WriteFile.WriteFilePath(nomeiaArquivo(contador[0]), lista_final.toString());
+
+            combinadoraSemaphore.acquire();
+            contador[0]++;
+            combinadoraSemaphore.release();
+
+            combinadoraAlert.release();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-
-        excluiArquivoLista();
-        WriteFile.WriteFilePath(nomeiaArquivo(contador), lista_final.toString());
-        contador++;
     }
 
     public void excluiArquivoLista(){
-        for (int i = 0; i <= fila_arquivos_gerados.size(); i++){
-            fila_arquivos_gerados.remove(i);
-        }
+        fila_arquivos_gerados.clear();
     }
 
     private String nomeiaArquivo(int contador){

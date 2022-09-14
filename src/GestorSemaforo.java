@@ -1,8 +1,9 @@
 import java.util.concurrent.Semaphore;
 
 public class GestorSemaforo {
-    private Semaphore s1;
-    private Semaphore s2;
+    private Semaphore trabalhadoraSemaphore;
+    private Semaphore combinadoraSemaphore;
+    private Semaphore combinadoraAlert;
     private Semaphore vetor;
     private Semaphore counterSemaphore;
     private Semaphore barreiraEntrada;
@@ -11,12 +12,16 @@ public class GestorSemaforo {
     private int limit;
 
     public GestorSemaforo(int[] counter, int limit){
-        this.s1 = new Semaphore(1);
-        this.s2 = new Semaphore(1);
+        this.trabalhadoraSemaphore = new Semaphore(1);
+        this.combinadoraSemaphore = new Semaphore(1);
+        this.combinadoraAlert = new Semaphore(0);
         this.vetor = new Semaphore(1);
+
         this.counterSemaphore = new Semaphore(1);
+
         this.barreiraEntrada = new Semaphore(0);
         this.barreiraSaida = new Semaphore(1);
+
         this.counter = counter;
         this.limit = limit;
     }
@@ -29,6 +34,7 @@ public class GestorSemaforo {
             if (counter[0] == limit) {
                 barreiraEntrada.release();
                 barreiraSaida.acquire();
+                combinadoraAlert.release();
             }
             counterSemaphore.release();
 
@@ -45,6 +51,7 @@ public class GestorSemaforo {
             counter[0]--;
 
             if (counter[0] == 0) {
+                combinadoraAlert.acquire();
                 barreiraSaida.release();
                 barreiraEntrada.acquire();
             }
@@ -59,12 +66,13 @@ public class GestorSemaforo {
 
     public Semaphore getSemaphoreByIndex(int index){
         return switch (index) {
-            case 0 -> s1;
-            case 1 -> s2;
+            case 0 -> trabalhadoraSemaphore;
+            case 1 -> combinadoraSemaphore;
             case 2 -> vetor;
             case 3 -> barreiraEntrada;
             case 4 -> barreiraSaida;
             case 5 -> counterSemaphore;
+            case 6 -> combinadoraAlert;
             default -> barreiraEntrada;
         };
     }
