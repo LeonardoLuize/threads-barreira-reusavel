@@ -22,17 +22,16 @@ public class Trabalhadora extends Thread{
             Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
 
             trabalhadoraSemaphore.acquire();
-            String sortedPath = getCaminho("-Ordenada");
-            String path = getCaminho("-Desordenada");
+            String path = getCaminho();
             this.index[0]++;
             trabalhadoraSemaphore.release();
 
             WriteFile.WriteFilePath(path, getVector());
             quicksort(0, this.sorted_vector.length - 1);
-            WriteFile.WriteFilePath(sortedPath, getSortedVector());
+            WriteFile.WriteFilePath(path, getSortedVector());
 
             vetorSemaphore.acquire();
-            fila_arquivos.add(sortedPath);
+            fila_arquivos.add(path);
             vetorSemaphore.release();
 
             gestorSemaforo.executaBarreiraEntrada();
@@ -110,9 +109,8 @@ public class Trabalhadora extends Thread{
         this.vector = vector;
     }
 
-    private String getCaminho(String sufix){
+    private String getCaminho(){
         String arqName = "Lista";
-        arqName += sufix;
         arqName += getIndex();
         arqName += ".txt";
         return arqName;
