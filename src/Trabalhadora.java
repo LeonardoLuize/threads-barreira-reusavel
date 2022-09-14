@@ -9,37 +9,42 @@ public class Trabalhadora extends Thread{
     private GestorSemaforo gestorSemaforo;
     private ArrayList<String> fila_arquivos;
 
-    public Trabalhadora(ArrayList<String> fila_arquivos, int[] index, GestorSemaforo gestorSemaforo){
+    private int loopLimit;
+    private int loopCounter = 0;
+
+    public Trabalhadora(ArrayList<String> fila_arquivos, int[] index, GestorSemaforo gestorSemaforo, int loopLimit){
         this.index = index;
         this.gestorSemaforo = gestorSemaforo;
         this.fila_arquivos = fila_arquivos;
     }
 
     public void run(){
-        try {
-            makeVector(1000);
-            Semaphore trabalhadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(0);
-            Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
+        while(true) {
+            try {
+                makeVector(1000);
+                Semaphore trabalhadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(0);
+                Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
 
-            trabalhadoraSemaphore.acquire();
-            String path = getCaminho();
-            this.index[0]++;
-            trabalhadoraSemaphore.release();
+                trabalhadoraSemaphore.acquire();
+                String path = getCaminho();
+                this.index[0]++;
+                trabalhadoraSemaphore.release();
 
-            WriteFile.WriteFilePath(path, getVector());
-            quicksort(0, this.sorted_vector.length - 1);
-            WriteFile.WriteFilePath(path, getSortedVector());
+                WriteFile.WriteFilePath(path, getVector());
+                quicksort(0, this.sorted_vector.length - 1);
+                WriteFile.WriteFilePath(path, getSortedVector());
 
-            vetorSemaphore.acquire();
-            fila_arquivos.add(path);
-            vetorSemaphore.release();
+                vetorSemaphore.acquire();
+                fila_arquivos.add(path);
+                vetorSemaphore.release();
 
-            gestorSemaforo.executaBarreiraEntrada();
+                gestorSemaforo.executaBarreiraEntrada();
 
-
-            gestorSemaforo.executaBarreiraSaida();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+                gestorSemaforo.executaBarreiraSaida();
+                loopCounter++;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

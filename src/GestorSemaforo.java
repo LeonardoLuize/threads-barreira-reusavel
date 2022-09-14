@@ -3,6 +3,7 @@ import java.util.concurrent.Semaphore;
 public class GestorSemaforo {
     private Semaphore trabalhadoraSemaphore;
     private Semaphore combinadoraSemaphore;
+    private Semaphore esperaCombinadora;
     private Semaphore combinadoraAlert;
     private Semaphore vetor;
     private Semaphore counterSemaphore;
@@ -15,6 +16,7 @@ public class GestorSemaforo {
         this.trabalhadoraSemaphore = new Semaphore(1);
         this.combinadoraSemaphore = new Semaphore(1);
         this.combinadoraAlert = new Semaphore(0);
+        this.esperaCombinadora = new Semaphore(0);
         this.vetor = new Semaphore(1);
 
         this.counterSemaphore = new Semaphore(1);
@@ -31,10 +33,13 @@ public class GestorSemaforo {
             counterSemaphore.acquire();
             counter[0]++;
 
+            System.out.println("Contador barreira entrada: " + counter[0]);
+
             if (counter[0] == limit) {
-                barreiraEntrada.release();
+                System.out.println("\nFecha Saída");
+                System.out.println("Libera Entrada\n");
                 barreiraSaida.acquire();
-                combinadoraAlert.release();
+                barreiraEntrada.release();
             }
             counterSemaphore.release();
 
@@ -49,9 +54,15 @@ public class GestorSemaforo {
         try {
             counterSemaphore.acquire();
             counter[0]--;
-
+            System.out.println("Contador barreira saida: " + counter[0]);
             if (counter[0] == 0) {
-                combinadoraAlert.acquire();
+                combinadoraAlert.release();
+                System.out.println("\nSinaliza Combinadora...");
+                esperaCombinadora.acquire();
+
+                System.out.println("Libera Saida");
+                System.out.println("Fecha Entrada\n");
+
                 barreiraSaida.release();
                 barreiraEntrada.acquire();
             }
@@ -73,6 +84,7 @@ public class GestorSemaforo {
             case 4 -> barreiraSaida;
             case 5 -> counterSemaphore;
             case 6 -> combinadoraAlert;
+            case 7 -> esperaCombinadora;
             default -> barreiraEntrada;
         };
     }

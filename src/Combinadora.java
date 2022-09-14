@@ -16,36 +16,40 @@ public class Combinadora extends Thread{
     }
 
     public void run(){
-        try {
-            Semaphore combinadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(1);
-            Semaphore combinadoraAlert = gestorSemaforo.getSemaphoreByIndex(6);
-            Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
+        while(true) {
+            try {
+                Semaphore combinadoraSemaphore = gestorSemaforo.getSemaphoreByIndex(1);
+                Semaphore combinadoraAlert = gestorSemaforo.getSemaphoreByIndex(6);
+                Semaphore esperaCombinadora = gestorSemaforo.getSemaphoreByIndex(7);
+                Semaphore vetorSemaphore = gestorSemaforo.getSemaphoreByIndex(2);
 
-            combinadoraAlert.acquire();
-            for (String fila_arquivos_gerado : fila_arquivos_gerados) {
-                ArrayList<Integer> arquivo;
-                try {
-                    arquivo = WriteFile.ReadFile(fila_arquivos_gerado);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                combinadoraAlert.acquire();
+                System.out.println("\n--- Combinando ---");
+                for (String fila_arquivos_gerado : fila_arquivos_gerados) {
+                    ArrayList<Integer> arquivo;
+                    try {
+                        arquivo = WriteFile.ReadFile(fila_arquivos_gerado);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    lista_final.addAll(arquivo);
                 }
 
-                lista_final.addAll(arquivo);
+                vetorSemaphore.acquire();
+                excluiArquivoLista();
+                vetorSemaphore.release();
+
+                WriteFile.WriteFilePath(nomeiaArquivo(contador[0]), lista_final.toString());
+
+                combinadoraSemaphore.acquire();
+                contador[0]++;
+                combinadoraSemaphore.release();
+                System.out.println("--- Combinado! ---\n");
+                esperaCombinadora.release();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-
-            vetorSemaphore.acquire();
-            excluiArquivoLista();
-            vetorSemaphore.release();
-
-            WriteFile.WriteFilePath(nomeiaArquivo(contador[0]), lista_final.toString());
-
-            combinadoraSemaphore.acquire();
-            contador[0]++;
-            combinadoraSemaphore.release();
-
-            combinadoraAlert.release();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
